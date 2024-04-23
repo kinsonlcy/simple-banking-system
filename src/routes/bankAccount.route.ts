@@ -27,6 +27,10 @@ class BankAccountRoute extends Route {
       "/bank-account/transfer",
       this.bankAccountController.transfer
     );
+    this.router.get(
+      "/bank-account/transactions/:bankAccountId",
+      this.bankAccountController.transactionHistory
+    );
   }
 }
 

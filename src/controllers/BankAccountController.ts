@@ -48,13 +48,24 @@ class BankAccountController {
     }
 
     try {
-      const bankAccount = await prisma.bankAccount.update({
-        where: { id: Number(bankAccountId) },
-        data: { balance: { increment: amount } },
-      });
+      const result = await prisma.$transaction(async (tx) => {
+        const bankAccount = await tx.bankAccount.update({
+          where: { id: Number(bankAccountId) },
+          data: { balance: { increment: amount } },
+        });
 
-      res.json(bankAccount);
-    } catch (error) {
+        await tx.transaction.create({
+          data: {
+            type: "DEPOSIT",
+            amount: amount,
+            bankAccount: { connect: { id: bankAccount.id } },
+          },
+        });
+
+        return bankAccount;
+      });
+      res.json(result);
+    } catch (e: any) {
       res.json({ error: "Deposit failed" });
     }
   }
@@ -77,12 +88,24 @@ class BankAccountController {
           .send({ error: "bank account does not have enough balance" });
       }
 
-      const updatedBankAccount = await prisma.bankAccount.update({
-        where: { id: Number(bankAccountId) },
-        data: { balance: { decrement: amount } },
+      const result = await prisma.$transaction(async (tx) => {
+        const updatedBankAccount = await prisma.bankAccount.update({
+          where: { id: Number(bankAccountId) },
+          data: { balance: { decrement: amount } },
+        });
+
+        await tx.transaction.create({
+          data: {
+            type: "WITHDRAW",
+            amount: amount,
+            bankAccount: { connect: { id: updatedBankAccount.id } },
+          },
+        });
+
+        return updatedBankAccount;
       });
 
-      res.json(updatedBankAccount);
+      res.json(result);
     } catch (error) {
       res.json({ error: "Withdraw failed" });
     }
@@ -114,6 +137,14 @@ class BankAccountController {
           );
         }
 
+        await tx.transaction.create({
+          data: {
+            type: "TRANSFER_OUT",
+            amount: amount,
+            bankAccount: { connect: { id: fromBankAccount.id } },
+          },
+        });
+
         const toBankAccount = await tx.bankAccount.update({
           data: {
             balance: {
@@ -125,12 +156,32 @@ class BankAccountController {
           },
         });
 
+        await tx.transaction.create({
+          data: {
+            type: "TRANSFER_IN",
+            amount: amount,
+            bankAccount: { connect: { id: toBankAccount.id } },
+          },
+        });
+
         return { from: fromBankAccount, to: toBankAccount };
       });
       res.json(result);
     } catch (e: any) {
       res.json({ error: `Transfer failed, ${e.message}` });
     }
+  }
+
+  async transactionHistory(req: Request, res: Response) {
+    const { bankAccountId } = req.params;
+
+    const transactionHistory = await prisma.transaction.findMany({
+      where: {
+        bankAccountId: Number(bankAccountId),
+      },
+    });
+
+    res.json(transactionHistory);
   }
 }
 
