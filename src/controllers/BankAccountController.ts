@@ -87,6 +87,51 @@ class BankAccountController {
       res.json({ error: "Withdraw failed" });
     }
   }
+
+  async transfer(req: Request, res: Response) {
+    const { fromAccountId, toAccountId, amount } = req.body;
+
+    if (amount <= 0) {
+      return res.status(400).send({ error: "amount is invalid" });
+    }
+
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        const fromBankAccount = await tx.bankAccount.update({
+          data: {
+            balance: {
+              decrement: amount,
+            },
+          },
+          where: {
+            id: fromAccountId,
+          },
+        });
+
+        if (fromBankAccount.balance < 0) {
+          throw new Error(
+            `bank account id: ${fromAccountId} does not have enough fund`
+          );
+        }
+
+        const toBankAccount = await tx.bankAccount.update({
+          data: {
+            balance: {
+              increment: amount,
+            },
+          },
+          where: {
+            id: toAccountId,
+          },
+        });
+
+        return { from: fromBankAccount, to: toBankAccount };
+      });
+      res.json(result);
+    } catch (e: any) {
+      res.json({ error: `Transfer failed, ${e.message}` });
+    }
+  }
 }
 
 export default BankAccountController;

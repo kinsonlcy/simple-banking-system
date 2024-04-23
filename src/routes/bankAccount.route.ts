@@ -23,6 +23,10 @@ class BankAccountRoute extends Route {
       "/bank-account/withdraw",
       this.bankAccountController.withdraw
     );
+    this.router.post(
+      "/bank-account/transfer",
+      this.bankAccountController.transfer
+    );
   }
 }
 
