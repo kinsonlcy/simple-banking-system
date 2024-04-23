@@ -19,6 +19,10 @@ class BankAccountRoute extends Route {
       "/bank-account/deposit",
       this.bankAccountController.deposit
     );
+    this.router.post(
+      "/bank-account/withdraw",
+      this.bankAccountController.withdraw
+    );
   }
 }
 
