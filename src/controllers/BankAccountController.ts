@@ -39,6 +39,25 @@ class BankAccountController {
 
     res.json(bankAccounts);
   }
+
+  async deposit(req: Request, res: Response) {
+    const { bankAccountId, amount } = req.body;
+
+    if (amount <= 0) {
+      return res.status(400).send({ error: "amount is invalid" });
+    }
+
+    try {
+      const bankAccount = await prisma.bankAccount.update({
+        where: { id: Number(bankAccountId) },
+        data: { balance: { increment: amount } },
+      });
+
+      res.json(bankAccount);
+    } catch (error) {
+      res.json({ error: "Deposit failed" });
+    }
+  }
 }
 
 export default BankAccountController;

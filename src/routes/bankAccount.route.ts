@@ -15,6 +15,10 @@ class BankAccountRoute extends Route {
       "/bank-account/:user_id",
       this.bankAccountController.findByUserId
     );
+    this.router.post(
+      "/bank-account/deposit",
+      this.bankAccountController.deposit
+    );
   }
 }
 
