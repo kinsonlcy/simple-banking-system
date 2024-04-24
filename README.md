@@ -59,6 +59,12 @@ That's all of setup! You're good to go.
 
 ### Development server
 
+Please run migration before starting the server, invoke
+
+```bash
+yarn prisma migrate dev
+```
+
 To start the development server, invoke
 
 ```bash
@@ -68,12 +74,6 @@ yarn dev
 Navigate to [http://localhost:3000](http://localhost:3000) to see the server in action.
 
 The development server will restart automatically to take in recent changes to files in `src` folder, thanks to `nodemon`.
-
-To run migration, invoke
-
-```bash
-yarn prisma migrate dev
-```
 
 To run test, invoke
 
