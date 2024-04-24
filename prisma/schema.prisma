@@ -19,11 +19,13 @@ model User {
 
 model BankAccount {
   id          Int           @id @default(autoincrement())
-  name        String        @unique
+  name        String
   balance     Float
   owner       User          @relation(fields: [ownerId], references: [id])
   ownerId     Int
   transaction Transaction[]
+
+  @@unique([name, ownerId])
 }
 
 model Transaction {
