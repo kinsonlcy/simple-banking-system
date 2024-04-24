@@ -1,11 +1,11 @@
 {
   "name": "simple-banking-system",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/src/server.js",
   "license": "MIT",
   "scripts": {
     "build": "yarn tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest --coverage"
   },
