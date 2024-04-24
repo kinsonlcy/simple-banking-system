@@ -37,7 +37,7 @@ describe("User routes", () => {
     });
   });
 
-  describe("POST /user/:userId", () => {
+  describe("GET /user/:userId", () => {
     test("return correct user", async () => {
       const user = {
         id: 1,
@@ -61,7 +61,7 @@ describe("User routes", () => {
 
       const res = await request(app).get("/user/1").expect(404);
 
-      expect(res.body).toEqual({ error: "User not found, user_id: 1" });
+      expect(res.body).toEqual({ error: "User not found, userId: 1" });
     });
   });
 });

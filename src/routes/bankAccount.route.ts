@@ -12,7 +12,7 @@ class BankAccountRoute extends Route {
   protected setRoutes() {
     this.router.post("/bank-account/create", this.bankAccountController.create);
     this.router.get(
-      "/bank-account/:user_id",
+      "/bank-account/:userId",
       this.bankAccountController.findByUserId
     );
     this.router.post(

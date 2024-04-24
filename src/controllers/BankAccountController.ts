@@ -25,15 +25,21 @@ class BankAccountController {
   }
 
   async findByUserId(req: Request, res: Response) {
-    const { user_id } = req.params;
+    const { userId } = req.params;
     const { name } = req.query;
 
     const bankAccounts = await prisma.bankAccount.findMany({
       where: {
-        ownerId: Number(user_id),
+        ownerId: Number(userId),
         ...(name ? { AND: [{ name: String(name) }] } : {}),
       },
     });
+
+    if (bankAccounts.length === 0) {
+      return res
+        .status(404)
+        .send({ error: `No bank account found, userId: ${userId}` });
+    }
 
     res.json(bankAccounts);
   }
@@ -41,11 +47,11 @@ class BankAccountController {
   async deposit(req: Request, res: Response) {
     const { bankAccountId, amount } = req.body;
 
-    if (amount <= 0) {
-      return res.status(400).send({ error: "amount is invalid" });
-    }
-
     try {
+      if (amount <= 0) {
+        throw new Error("amount is invalid");
+      }
+
       const result = await prisma.$transaction(async (tx) => {
         const bankAccount = await tx.bankAccount.update({
           where: { id: Number(bankAccountId) },
@@ -63,27 +69,25 @@ class BankAccountController {
         return bankAccount;
       });
       res.json(result);
-    } catch (e: any) {
-      res.json({ error: "Deposit failed" });
+    } catch (error: any) {
+      res.status(400).json({ error: `Deposit failed, ${error.message}` });
     }
   }
 
   async withdraw(req: Request, res: Response) {
     const { bankAccountId, amount } = req.body;
 
-    if (amount <= 0) {
-      return res.status(400).send({ error: "amount is invalid" });
-    }
-
     try {
+      if (amount <= 0) {
+        throw new Error("amount is invalid");
+      }
+
       const bankAccount = await prisma.bankAccount.findUnique({
         where: { id: Number(bankAccountId) },
       });
 
       if (bankAccount && bankAccount.balance < amount) {
-        return res
-          .status(400)
-          .send({ error: "bank account does not have enough balance" });
+        throw new Error("bank account does not have enough balance");
       }
 
       const result = await prisma.$transaction(async (tx) => {
@@ -104,19 +108,19 @@ class BankAccountController {
       });
 
       res.json(result);
-    } catch (error) {
-      res.json({ error: "Withdraw failed" });
+    } catch (error: any) {
+      res.status(400).json({ error: `Withdraw failed, ${error.message}` });
     }
   }
 
   async transfer(req: Request, res: Response) {
     const { fromAccountId, toAccountId, amount } = req.body;
 
-    if (amount <= 0) {
-      return res.status(400).send({ error: "amount is invalid" });
-    }
-
     try {
+      if (amount <= 0) {
+        throw new Error("amount is invalid");
+      }
+
       const result = await prisma.$transaction(async (tx) => {
         const fromBankAccount = await tx.bankAccount.update({
           data: {
@@ -166,7 +170,7 @@ class BankAccountController {
       });
       res.json(result);
     } catch (e: any) {
-      res.json({ error: `Transfer failed, ${e.message}` });
+      res.status(400).json({ error: `Transfer failed, ${e.message}` });
     }
   }
 

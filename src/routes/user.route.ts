@@ -11,7 +11,7 @@ class UserRoute extends Route {
 
   protected setRoutes() {
     this.router.post("/user/create", this.userController.create);
-    this.router.get("/user/:user_id", this.userController.find);
+    this.router.get("/user/:userId", this.userController.find);
   }
 }
 
